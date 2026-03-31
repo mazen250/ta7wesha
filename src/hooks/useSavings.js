@@ -3,6 +3,7 @@ import {
   TROY_OUNCE_GRAMS, GOLD_21K_PURITY, GOLD_POUND_GRAMS,
   API_CURRENCY, API_GOLD,
   STORAGE_KEYS, DEFAULT_AMOUNTS, ASSET_COLORS,
+  ZAKAT_NISAB_GOLD_GRAMS, ZAKAT_RATE,
 } from '../constants';
 
 // -- localStorage helpers --
@@ -65,6 +66,9 @@ export function useSavings() {
   const [incomes, setIncomes] = useState(() =>
     load(STORAGE_KEYS.incomes, [{ id: uid(), currency: 'egp', amount: '' }])
   );
+  const [expenses, setExpenses] = useState(() =>
+    load(STORAGE_KEYS.expenses, [{ id: uid(), category: 'other', currency: 'egp', amount: '' }])
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -72,6 +76,7 @@ export function useSavings() {
   useEffect(() => save(STORAGE_KEYS.amounts, amounts), [amounts]);
   useEffect(() => save(STORAGE_KEYS.goals, goals), [goals]);
   useEffect(() => save(STORAGE_KEYS.incomes, incomes), [incomes]);
+  useEffect(() => save(STORAGE_KEYS.expenses, expenses), [expenses]);
 
   // Fetch rates from APIs
   const fetchRates = useCallback(async () => {
@@ -143,14 +148,29 @@ export function useSavings() {
       return sum + convertToEgp(amount, income.currency, rates);
     }, 0);
 
-    // Goals with progress calculations
+    // Monthly expenses (converted to EGP)
+    const monthlyExpensesEgp = expenses.reduce((sum, expense) => {
+      const amount = parseFloat(expense.amount) || 0;
+      return sum + convertToEgp(amount, expense.currency, rates);
+    }, 0);
+
+    const monthlySurplus = monthlyEgp - monthlyExpensesEgp;
+    const savingsRate = monthlyEgp > 0 ? ((monthlyEgp - monthlyExpensesEgp) / monthlyEgp) * 100 : 0;
+
+    // Goals with progress calculations (use surplus if expenses exist)
     const goalsCalc = goals.map(goal => {
       const target = parseFloat(goal.target) || 0;
       const remaining = Math.max(0, target - totalEgp);
-      const eta = monthlyEgp > 0 ? remaining / monthlyEgp : null;
+      const eta = monthlySurplus > 0 ? remaining / monthlySurplus : null;
       const progress = target > 0 ? Math.min(100, (totalEgp / target) * 100) : 0;
       return { ...goal, remaining, eta, progress, targetValue: target };
     });
+
+    // Zakat calculations
+    const gold24kPrice = goldGramEgp / GOLD_21K_PURITY;
+    const nisabEgp = ZAKAT_NISAB_GOLD_GRAMS * gold24kPrice;
+    const zakatEligible = totalEgp >= nisabEgp;
+    const zakatAmount = zakatEligible ? totalEgp * ZAKAT_RATE : 0;
 
     // Price change indicators (vs previous fetch)
     let changes = null;
@@ -176,9 +196,11 @@ export function useSavings() {
 
     return {
       ...rates, totalEgp, totalUsd, monthlyEgp,
+      monthlyExpensesEgp, monthlySurplus, savingsRate,
       goalsCalc, changes, breakdown,
+      nisabEgp, zakatEligible, zakatAmount,
     };
-  }, [rawRates, prevRates, amounts, incomes, goals]);
+  }, [rawRates, prevRates, amounts, incomes, expenses, goals]);
 
   // -- State updaters --
 
@@ -206,6 +228,43 @@ export function useSavings() {
     setIncomes(prev => prev.map(income => income.id === id ? { ...income, [field]: value } : income));
   }, []);
 
+  const addExpense = useCallback(() => {
+    setExpenses(prev => [...prev, { id: uid(), category: 'other', currency: 'egp', amount: '' }]);
+  }, []);
+  const removeExpense = useCallback((id) => {
+    setExpenses(prev => prev.filter(e => e.id !== id));
+  }, []);
+  const updateExpense = useCallback((id, field, value) => {
+    setExpenses(prev => prev.map(e => e.id === id ? { ...e, [field]: value } : e));
+  }, []);
+
+  // Export all data as JSON
+  const exportData = useCallback(() => {
+    const data = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      amounts,
+      goals,
+      incomes,
+      expenses,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ta7wesha-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [amounts, goals, incomes, expenses]);
+
+  // Import data from JSON
+  const importData = useCallback((data) => {
+    if (data.amounts) setAmounts(data.amounts);
+    if (data.goals) setGoals(data.goals);
+    if (data.incomes) setIncomes(data.incomes);
+    if (data.expenses) setExpenses(data.expenses);
+  }, []);
+
   return {
     amounts, setAmount,
     rates: derived,
@@ -214,5 +273,7 @@ export function useSavings() {
     refreshRates: fetchRates,
     goals, addGoal, removeGoal, updateGoal,
     incomes, addIncome, removeIncome, updateIncome,
+    expenses, addExpense, removeExpense, updateExpense,
+    exportData, importData,
   };
 }

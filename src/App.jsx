@@ -8,9 +8,14 @@ import RateBanner from './components/RateBanner';
 import AssetInput from './components/AssetInput';
 import TotalDisplay from './components/TotalDisplay';
 import GoalTracker from './components/GoalTracker';
+import ExpenseTracker from './components/ExpenseTracker';
 import NetWorthChart from './components/NetWorthChart';
 import CurrencyConverter from './components/CurrencyConverter';
 import WhatIfCalc from './components/WhatIfCalc';
+import GoldCalc from './components/GoldCalc';
+import ZakatCalc from './components/ZakatCalc';
+import DataManager from './components/DataManager';
+import HeaderMenu from './components/HeaderMenu';
 
 function getValueInEgp(assetKey, value, rates) {
   if (!rates) return null;
@@ -26,6 +31,8 @@ export default function App() {
     lastUpdated, refreshRates,
     goals, addGoal, removeGoal, updateGoal,
     incomes, addIncome, removeIncome, updateIncome,
+    expenses, addExpense, removeExpense, updateExpense,
+    exportData, importData,
   } = useSavings();
 
   const { isDark, toggle: toggleTheme } = useTheme();
@@ -53,13 +60,17 @@ export default function App() {
                 Updated {timeAgo(lastUpdated)}
               </span>
             )}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-xl bg-[var(--c-card)] border border-[var(--c-border)] text-[var(--c-t3)] hover:text-[var(--c-t1)] transition-all"
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {isDark ? <Sun size={14} strokeWidth={2.5} /> : <Moon size={14} strokeWidth={2.5} />}
-            </button>
+            {/* Desktop: all buttons inline */}
+            <div className="hidden sm:contents">
+              <DataManager exportData={exportData} importData={importData} />
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-xl bg-[var(--c-card)] border border-[var(--c-border)] text-[var(--c-t3)] hover:text-[var(--c-t1)] transition-all"
+                aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {isDark ? <Sun size={14} strokeWidth={2.5} /> : <Moon size={14} strokeWidth={2.5} />}
+              </button>
+            </div>
             <button
               onClick={refreshRates}
               disabled={isLoading}
@@ -70,6 +81,13 @@ export default function App() {
               <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} strokeWidth={2.5} aria-hidden="true" />
               <span className="hidden sm:inline">Refresh</span>
             </button>
+            {/* Mobile: dropdown menu */}
+            <HeaderMenu
+              isDark={isDark}
+              toggleTheme={toggleTheme}
+              exportData={exportData}
+              importData={importData}
+            />
           </div>
         </header>
 
@@ -83,7 +101,7 @@ export default function App() {
         {/* Rate cards */}
         <RateBanner rates={rates} isLoading={isLoading} />
 
-        {/* Main grid: Savings | Goals */}
+        {/* Main grid: Savings + Expenses | Goals */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
           <div className="space-y-4">
             <div className="rounded-2xl bg-[var(--c-card)] border border-[var(--c-border)] p-5" role="region" aria-label="My savings">
@@ -109,6 +127,10 @@ export default function App() {
               </div>
             </div>
             <TotalDisplay rates={rates} isLoading={isLoading} />
+            <ExpenseTracker
+              expenses={expenses} addExpense={addExpense} removeExpense={removeExpense} updateExpense={updateExpense}
+              rates={rates}
+            />
           </div>
 
           <GoalTracker
@@ -118,11 +140,21 @@ export default function App() {
           />
         </div>
 
-        {/* Bottom grid: Chart | Converter | What If */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {/* Bottom grid: tools */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <NetWorthChart breakdown={rates?.breakdown} />
-          <CurrencyConverter rates={rates} />
-          <WhatIfCalc rates={rates} amounts={amounts} />
+          <div className="lg:col-span-2">
+            <CurrencyConverter rates={rates} />
+          </div>
+          <div className="lg:col-span-2">
+            <WhatIfCalc rates={rates} amounts={amounts} />
+          </div>
+          <div className="lg:col-span-2">
+            <GoldCalc rates={rates} />
+          </div>
+          <div className="lg:col-span-2">
+            <ZakatCalc rates={rates} />
+          </div>
         </div>
 
         <footer className="text-center text-[10px] text-[var(--c-t4)] mt-10 pb-4 font-medium tracking-wide">

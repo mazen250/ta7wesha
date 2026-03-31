@@ -16,6 +16,7 @@ export const STORAGE_KEYS = {
   prevRates: 'ta7wesha-prev-rates',
   goals: 'ta7wesha-goals',
   incomes: 'ta7wesha-incomes',
+  expenses: 'ta7wesha-expenses',
   theme: 'ta7wesha-theme',
 };
 
@@ -45,6 +46,26 @@ export const CURRENCY_OPTIONS = [
 
 // -- Default state values --
 export const DEFAULT_AMOUNTS = { gold: '', usd: '', eur: '', egp: '' };
+
+// -- Expense categories --
+export const EXPENSE_CATEGORIES = [
+  { value: 'rent', label: 'Rent' },
+  { value: 'food', label: 'Food' },
+  { value: 'transport', label: 'Transport' },
+  { value: 'bills', label: 'Bills' },
+  { value: 'other', label: 'Other' },
+];
+
+// -- Gold karat options --
+export const KARAT_OPTIONS = [
+  { value: 24, label: '24K' },
+  { value: 21, label: '21K' },
+  { value: 18, label: '18K' },
+];
+
+// -- Zakat --
+export const ZAKAT_NISAB_GOLD_GRAMS = 85; // 85g of 24k gold
+export const ZAKAT_RATE = 0.025; // 2.5%
 
 // -- Tick interval for "Updated X ago" display (ms) --
 export const TIME_AGO_TICK_MS = 60_000;
