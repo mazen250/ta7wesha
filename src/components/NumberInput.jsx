@@ -1,10 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 
 function formatDisplay(value) {
   if (value === '' || value == null) return '';
-  const num = parseFloat(value);
-  if (isNaN(num)) return value;
-  // Preserve decimal part as-is while typing
   const str = String(value);
   const dotIndex = str.indexOf('.');
   if (dotIndex !== -1) {
@@ -13,6 +10,8 @@ function formatDisplay(value) {
     const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     return formatted + decPart;
   }
+  const num = parseFloat(value);
+  if (isNaN(num)) return value;
   return num.toLocaleString('en-US', { maximumFractionDigits: 0 });
 }
 
@@ -20,31 +19,59 @@ function stripFormatting(str) {
   return str.replace(/,/g, '');
 }
 
+// Count how many raw (non-comma) characters appear before cursor position
+function rawOffset(formatted, cursorPos) {
+  let count = 0;
+  for (let i = 0; i < cursorPos && i < formatted.length; i++) {
+    if (formatted[i] !== ',') count++;
+  }
+  return count;
+}
+
+// Find cursor position in new formatted string that matches the raw offset
+function formattedOffset(formatted, raw) {
+  let count = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (formatted[i] !== ',') count++;
+    if (count === raw) return i + 1;
+  }
+  return formatted.length;
+}
+
 export default function NumberInput({ value, onChange, className = '', ...props }) {
-  const [focused, setFocused] = useState(false);
+  const inputRef = useRef(null);
 
   const handleChange = useCallback((e) => {
-    const raw = stripFormatting(e.target.value);
-    // Allow empty, digits, single dot, and leading minus
-    if (raw === '' || /^-?\d*\.?\d*$/.test(raw)) {
-      onChange(raw);
-    }
+    const el = e.target;
+    const cursorPos = el.selectionStart;
+    const oldFormatted = el.value;
+
+    const raw = stripFormatting(oldFormatted);
+    if (raw !== '' && !/^-?\d*\.?\d*$/.test(raw)) return;
+
+    // figure out where the cursor should land after reformatting
+    const rawCursor = rawOffset(oldFormatted, cursorPos);
+    const newFormatted = formatDisplay(raw);
+    const newCursor = formattedOffset(newFormatted, rawCursor);
+
+    onChange(raw);
+
+    // restore cursor after React re-renders the input
+    requestAnimationFrame(() => {
+      if (el === document.activeElement) {
+        el.setSelectionRange(newCursor, newCursor);
+      }
+    });
   }, [onChange]);
-
-  const handleFocus = useCallback(() => setFocused(true), []);
-  const handleBlur = useCallback(() => setFocused(false), []);
-
-  const displayValue = focused ? (value ?? '') : formatDisplay(value);
 
   return (
     <input
+      ref={inputRef}
       type="text"
       inputMode="decimal"
       {...props}
-      value={displayValue}
+      value={formatDisplay(value)}
       onChange={handleChange}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
       className={className}
     />
   );

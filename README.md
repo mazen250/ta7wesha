@@ -1,16 +1,43 @@
-# React + Vite
+# Ta7wesha
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A sleek, privacy-first savings dashboard for tracking your wealth in EGP. Enter your holdings in gold (21k), USD, EUR, and EGP — see everything converted to Egyptian Pounds in real time.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Multi-asset tracking** — Gold (21k grams), US Dollar, Euro, and Egyptian Pound
+- **Live exchange rates** — Fetched from open.er-api.com (currencies) and gold-api.com (gold price)
+- **Net worth breakdown** — Visual chart showing your portfolio composition
+- **Goal tracker** — Set savings goals in any currency and track progress
+- **Income planner** — Add income sources and see how fast you'll reach your goals
+- **Currency converter** — Quick conversions between all supported assets
+- **What-If calculator** — Simulate rate changes and see the impact on your savings
+- **Dark / Light mode** — Toggle between themes
+- **Offline-friendly** — Rates and data cached in localStorage, works without internet
+- **100% client-side** — No backend, no accounts, no data leaves your browser
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- Vite
+- Tailwind CSS 4
+- Lucide Icons
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+## Build
+
+```bash
+npm run build
+npm run preview
+```
+
+## License
+
+MIT
