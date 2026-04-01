@@ -1,6 +1,7 @@
 import { useState, useMemo, useId } from 'react';
 import { FlaskConical } from 'lucide-react';
 import { formatNumber } from '../utils/format';
+import { convertToEgp } from '../hooks/useSavings';
 import NumberInput from './NumberInput';
 
 function Slider({ label, value, onChange, min, max, unit }) {
@@ -28,7 +29,7 @@ function Slider({ label, value, onChange, min, max, unit }) {
   );
 }
 
-export default function WhatIfCalc({ rates, amounts }) {
+export default function WhatIfCalc({ rates, savings }) {
   const [goldChange, setGoldChange] = useState(0);
   const [usdChange, setUsdChange] = useState(0);
   const [extraSavings, setExtraSavings] = useState('');
@@ -37,21 +38,25 @@ export default function WhatIfCalc({ rates, amounts }) {
   const projection = useMemo(() => {
     if (!rates) return null;
 
-    const goldGrams = parseFloat(amounts.gold) || 0;
-    const usdAmount = parseFloat(amounts.usd) || 0;
-    const eurAmount = parseFloat(amounts.eur) || 0;
-    const egpAmount = parseFloat(amounts.egp) || 0;
+    // Aggregate savings by currency
+    const byCurrency = {};
+    for (const s of savings) {
+      const amt = parseFloat(s.amount) || 0;
+      if (amt <= 0) continue;
+      byCurrency[s.currency] = (byCurrency[s.currency] || 0) + amt;
+    }
 
     // Gold price change is independent of USD rate change
     const projectedGoldGramEgp = rates.goldGramEgp * (1 + goldChange / 100);
     // USD/EGP rate change only affects USD holdings
     const projectedUsdToEgp = rates.usdToEgp * (1 + usdChange / 100);
 
-    const projectedTotal =
-      goldGrams * projectedGoldGramEgp +
-      usdAmount * projectedUsdToEgp +
-      eurAmount * rates.eurToEgp +
-      egpAmount;
+    let projectedTotal = 0;
+    for (const [currency, amt] of Object.entries(byCurrency)) {
+      if (currency === 'gold') projectedTotal += amt * projectedGoldGramEgp;
+      else if (currency === 'usd') projectedTotal += amt * projectedUsdToEgp;
+      else projectedTotal += convertToEgp(amt, currency, rates);
+    }
 
     const difference = projectedTotal - rates.totalEgp;
 
@@ -66,7 +71,7 @@ export default function WhatIfCalc({ rates, amounts }) {
     }
 
     return { total: projectedTotal, difference, eta: projectedEta };
-  }, [rates, amounts, goldChange, usdChange, extraSavings]);
+  }, [rates, savings, goldChange, usdChange, extraSavings]);
 
   if (!rates) return null;
 

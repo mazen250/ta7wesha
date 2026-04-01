@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   TROY_OUNCE_GRAMS, GOLD_21K_PURITY, GOLD_POUND_GRAMS,
   API_CURRENCY, API_GOLD,
-  STORAGE_KEYS, DEFAULT_AMOUNTS, ASSET_COLORS,
-  ZAKAT_NISAB_GOLD_GRAMS, ZAKAT_RATE,
+  STORAGE_KEYS, ZAKAT_NISAB_GOLD_GRAMS, ZAKAT_RATE,
+  getCurrencyColor,
 } from '../constants';
 
 // -- localStorage helpers --
@@ -28,32 +28,71 @@ function save(key, value) {
 let idCounter = Date.now();
 const uid = () => String(idCounter++);
 
-// -- Convert any currency amount to EGP --
+// -- Migrate old amounts format to new savings array --
 
-export function convertToEgp(amount, currency, rates) {
-  switch (currency) {
-    case 'usd': return amount * rates.usdToEgp;
-    case 'eur': return amount * rates.eurToEgp;
-    case 'gold': return amount * rates.goldGramEgp;
-    default: return amount;
+function loadSavings() {
+  const saved = load(STORAGE_KEYS.savings, null);
+  if (saved) return saved;
+
+  // Migrate from legacy { gold: '', usd: '', ... } format
+  const oldAmounts = load(STORAGE_KEYS.amounts, null);
+  if (oldAmounts) {
+    return Object.entries(oldAmounts).map(([currency, amount]) => ({
+      id: uid(), currency, amount,
+    }));
   }
+
+  return [
+    { id: uid(), currency: 'gold', amount: '', karat: 21 },
+    { id: uid(), currency: 'usd', amount: '' },
+    { id: uid(), currency: 'eur', amount: '' },
+    { id: uid(), currency: 'egp', amount: '' },
+  ];
 }
 
-export function convertFromEgp(egpAmount, currency, rates) {
-  switch (currency) {
-    case 'usd': return egpAmount / rates.usdToEgp;
-    case 'eur': return egpAmount / rates.eurToEgp;
-    case 'gold': return egpAmount / rates.goldGramEgp;
-    default: return egpAmount;
+// -- Convert any currency amount to EGP --
+
+export function convertToEgp(amount, currency, rates, karat = 21) {
+  if (currency === 'egp') return amount;
+  if (currency === 'gold') {
+    // goldGramEgp is 21k; scale for other karats
+    const gold24k = rates.goldGramEgp / GOLD_21K_PURITY;
+    return amount * gold24k * (karat / 24);
   }
+  // Use full API rates if available
+  if (rates.allRates) {
+    const code = currency.toUpperCase();
+    if (rates.allRates[code] && rates.allRates.EGP) {
+      return amount * (rates.allRates.EGP / rates.allRates[code]);
+    }
+  }
+  // Fallback for legacy cached rates
+  if (currency === 'usd') return amount * rates.usdToEgp;
+  if (currency === 'eur') return amount * rates.eurToEgp;
+  return amount;
+}
+
+export function convertFromEgp(egpAmount, currency, rates, karat = 21) {
+  if (currency === 'egp') return egpAmount;
+  if (currency === 'gold') {
+    const gold24k = rates.goldGramEgp / GOLD_21K_PURITY;
+    return egpAmount / (gold24k * (karat / 24));
+  }
+  if (rates.allRates) {
+    const code = currency.toUpperCase();
+    if (rates.allRates[code] && rates.allRates.EGP) {
+      return egpAmount / (rates.allRates.EGP / rates.allRates[code]);
+    }
+  }
+  if (currency === 'usd') return egpAmount / rates.usdToEgp;
+  if (currency === 'eur') return egpAmount / rates.eurToEgp;
+  return egpAmount;
 }
 
 // -- Hook --
 
 export function useSavings() {
-  const [amounts, setAmounts] = useState(() =>
-    load(STORAGE_KEYS.amounts, DEFAULT_AMOUNTS)
-  );
+  const [savings, setSavings] = useState(loadSavings);
   const [rawRates, setRawRates] = useState(() =>
     load(STORAGE_KEYS.rates, null)
   );
@@ -73,7 +112,7 @@ export function useSavings() {
   const [error, setError] = useState(null);
 
   // Persist to localStorage on changes
-  useEffect(() => save(STORAGE_KEYS.amounts, amounts), [amounts]);
+  useEffect(() => save(STORAGE_KEYS.savings, savings), [savings]);
   useEffect(() => save(STORAGE_KEYS.goals, goals), [goals]);
   useEffect(() => save(STORAGE_KEYS.incomes, incomes), [incomes]);
   useEffect(() => save(STORAGE_KEYS.expenses, expenses), [expenses]);
@@ -96,6 +135,7 @@ export function useSavings() {
         usdToEgp: currencyData.rates.EGP,
         eurToUsd: currencyData.rates.EUR,
         goldOunceUsd: goldData.price,
+        allRates: currencyData.rates,
         lastUpdated: new Date().toISOString(),
       };
 
@@ -120,7 +160,7 @@ export function useSavings() {
   // Derived calculations (memoized)
   const derived = useMemo(() => {
     if (!rawRates) return null;
-    const { usdToEgp, eurToUsd, goldOunceUsd } = rawRates;
+    const { usdToEgp, eurToUsd, goldOunceUsd, allRates } = rawRates;
 
     // Guard against invalid API data
     if (!eurToUsd || !usdToEgp) return null;
@@ -131,15 +171,20 @@ export function useSavings() {
     const goldGramEgp = gold24kGramEgp * GOLD_21K_PURITY;
     const goldPoundEgp = GOLD_POUND_GRAMS * goldGramEgp;
 
-    const rates = { usdToEgp, eurToEgp, goldGramEgp, goldPoundEgp };
+    const rates = { usdToEgp, eurToEgp, goldGramEgp, goldPoundEgp, allRates };
 
-    // Savings breakdown
-    const goldValue = (parseFloat(amounts.gold) || 0) * goldGramEgp;
-    const usdValue = (parseFloat(amounts.usd) || 0) * usdToEgp;
-    const eurValue = (parseFloat(amounts.eur) || 0) * eurToEgp;
-    const egpValue = parseFloat(amounts.egp) || 0;
+    // Savings breakdown — aggregate by currency
+    const currencyTotals = {};
+    let totalEgp = 0;
+    for (const s of savings) {
+      const amt = parseFloat(s.amount) || 0;
+      if (amt <= 0) continue;
+      const egpValue = convertToEgp(amt, s.currency, rates, s.karat || 21);
+      totalEgp += egpValue;
+      if (!currencyTotals[s.currency]) currencyTotals[s.currency] = 0;
+      currencyTotals[s.currency] += egpValue;
+    }
 
-    const totalEgp = goldValue + usdValue + eurValue + egpValue;
     const totalUsd = usdToEgp > 0 ? totalEgp / usdToEgp : 0;
 
     // Monthly income (converted to EGP)
@@ -186,12 +231,13 @@ export function useSavings() {
 
     // Asset allocation breakdown (for pie chart)
     const breakdown = totalEgp > 0
-      ? [
-          { key: 'gold', label: 'Gold', value: goldValue, pct: (goldValue / totalEgp) * 100, color: ASSET_COLORS.gold },
-          { key: 'usd', label: 'USD', value: usdValue, pct: (usdValue / totalEgp) * 100, color: ASSET_COLORS.usd },
-          { key: 'eur', label: 'EUR', value: eurValue, pct: (eurValue / totalEgp) * 100, color: ASSET_COLORS.eur },
-          { key: 'egp', label: 'EGP', value: egpValue, pct: (egpValue / totalEgp) * 100, color: ASSET_COLORS.egp },
-        ].filter(item => item.value > 0)
+      ? Object.entries(currencyTotals).map(([key, value]) => ({
+          key,
+          label: key === 'gold' ? 'Gold' : key.toUpperCase(),
+          value,
+          pct: (value / totalEgp) * 100,
+          color: getCurrencyColor(key),
+        }))
       : [];
 
     return {
@@ -200,13 +246,21 @@ export function useSavings() {
       goalsCalc, changes, breakdown,
       nisabEgp, zakatEligible, zakatAmount,
     };
-  }, [rawRates, prevRates, amounts, incomes, expenses, goals]);
+  }, [rawRates, prevRates, savings, incomes, expenses, goals]);
 
-  // -- State updaters --
+  // -- Savings updaters --
 
-  const setAmount = useCallback((key, value) => {
-    setAmounts(prev => ({ ...prev, [key]: value }));
+  const addSaving = useCallback(() => {
+    setSavings(prev => [...prev, { id: uid(), currency: 'egp', amount: '' }]);
   }, []);
+  const removeSaving = useCallback((id) => {
+    setSavings(prev => prev.filter(s => s.id !== id));
+  }, []);
+  const updateSaving = useCallback((id, field, value) => {
+    setSavings(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
+  }, []);
+
+  // -- Goal updaters --
 
   const addGoal = useCallback(() => {
     setGoals(prev => [...prev, { id: uid(), name: '', target: '' }]);
@@ -218,6 +272,8 @@ export function useSavings() {
     setGoals(prev => prev.map(goal => goal.id === id ? { ...goal, [field]: value } : goal));
   }, []);
 
+  // -- Income updaters --
+
   const addIncome = useCallback(() => {
     setIncomes(prev => [...prev, { id: uid(), currency: 'egp', amount: '' }]);
   }, []);
@@ -227,6 +283,8 @@ export function useSavings() {
   const updateIncome = useCallback((id, field, value) => {
     setIncomes(prev => prev.map(income => income.id === id ? { ...income, [field]: value } : income));
   }, []);
+
+  // -- Expense updaters --
 
   const addExpense = useCallback(() => {
     setExpenses(prev => [...prev, { id: uid(), category: 'other', currency: 'egp', amount: '' }]);
@@ -241,9 +299,9 @@ export function useSavings() {
   // Export all data as JSON
   const exportData = useCallback(() => {
     const data = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
-      amounts,
+      savings,
       goals,
       incomes,
       expenses,
@@ -255,18 +313,24 @@ export function useSavings() {
     a.download = `ta7wesha-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [amounts, goals, incomes, expenses]);
+  }, [savings, goals, incomes, expenses]);
 
   // Import data from JSON
   const importData = useCallback((data) => {
-    if (data.amounts) setAmounts(data.amounts);
+    if (data.savings) setSavings(data.savings);
+    else if (data.amounts) {
+      // Support importing v1 backups
+      setSavings(Object.entries(data.amounts).map(([currency, amount]) => ({
+        id: uid(), currency, amount,
+      })));
+    }
     if (data.goals) setGoals(data.goals);
     if (data.incomes) setIncomes(data.incomes);
     if (data.expenses) setExpenses(data.expenses);
   }, []);
 
   return {
-    amounts, setAmount,
+    savings, addSaving, removeSaving, updateSaving,
     rates: derived,
     isLoading, error,
     lastUpdated: rawRates?.lastUpdated,

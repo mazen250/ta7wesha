@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Scale } from 'lucide-react';
+import { Scale, Info } from 'lucide-react';
 import { formatNumber } from '../utils/format';
 import { GOLD_21K_PURITY, KARAT_OPTIONS } from '../constants';
 import NumberInput from './NumberInput';
@@ -62,6 +62,13 @@ export default function GoldCalc({ rates }) {
             </p>
           </div>
         )}
+
+        <div className="flex items-start gap-1.5 pt-2 border-t border-[var(--c-border)]">
+          <Info size={11} className="text-[var(--c-t4)] mt-0.5 shrink-0" strokeWidth={2.5} />
+          <p className="text-[10px] text-[var(--c-t4)] leading-relaxed">
+            Melt value only — actual resale may differ due to craftsmanship fees (masna3ya). Prices based on international spot rate.
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -79,48 +79,52 @@ function ExpenseRow({ expense, onUpdate, onRemove, canRemove }) {
   const amtId = useId();
 
   return (
-    <div className="flex items-center gap-2">
-      <label htmlFor={catId} className="sr-only">Category</label>
-      <select
-        id={catId}
-        value={expense.category}
-        onChange={e => onUpdate(expense.id, 'category', e.target.value)}
-        className="bg-[var(--c-input)] border border-[var(--c-border)] rounded-lg px-2 py-2 text-[11px] font-semibold text-[var(--c-t1)] focus:outline-none focus:ring-1 focus:ring-[var(--c-ring)] cursor-pointer"
-        style={{ backgroundColor: 'var(--c-select)' }}
-      >
-        {EXPENSE_CATEGORIES.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-      <label htmlFor={curId} className="sr-only">Currency</label>
-      <select
-        id={curId}
-        value={expense.currency}
-        onChange={e => onUpdate(expense.id, 'currency', e.target.value)}
-        className="bg-[var(--c-input)] border border-[var(--c-border)] rounded-lg px-2 py-2 text-[11px] font-semibold text-[var(--c-t1)] focus:outline-none focus:ring-1 focus:ring-[var(--c-ring)] cursor-pointer"
-        style={{ backgroundColor: 'var(--c-select)' }}
-      >
-        {CURRENCY_OPTIONS.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-      <label htmlFor={amtId} className="sr-only">Amount</label>
-      <NumberInput
-        id={amtId}
-        placeholder="Amount"
-        value={expense.amount}
-        onChange={val => onUpdate(expense.id, 'amount', val)}
-        className="flex-1 sm:w-24 sm:flex-none bg-[var(--c-input)] border border-[var(--c-border)] rounded-lg px-2 py-2 text-sm font-semibold text-[var(--c-t1)] placeholder:text-[var(--c-ph)] focus:outline-none focus:ring-1 focus:ring-[var(--c-ring)] transition-all"
-      />
-      {canRemove && (
-        <button
-          onClick={() => onRemove(expense.id)}
-          className="text-[var(--c-t4)] hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-[var(--c-card-h)]"
-          aria-label="Remove expense"
+    <div className="rounded-xl p-2 hover:bg-[var(--c-card-h)] transition-all">
+      <div className="flex items-center gap-2 mb-2">
+        <label htmlFor={catId} className="sr-only">Category</label>
+        <select
+          id={catId}
+          value={expense.category}
+          onChange={e => onUpdate(expense.id, 'category', e.target.value)}
+          className="bg-[var(--c-input)] border border-[var(--c-border)] rounded-lg px-2 py-1.5 text-[11px] font-semibold text-[var(--c-t1)] focus:outline-none focus:ring-1 focus:ring-[var(--c-ring)] cursor-pointer"
+          style={{ backgroundColor: 'var(--c-select)' }}
         >
-          <X size={14} strokeWidth={2.5} aria-hidden="true" />
-        </button>
-      )}
+          {EXPENSE_CATEGORIES.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        <label htmlFor={curId} className="sr-only">Currency</label>
+        <select
+          id={curId}
+          value={expense.currency}
+          onChange={e => onUpdate(expense.id, 'currency', e.target.value)}
+          className="bg-[var(--c-input)] border border-[var(--c-border)] rounded-lg px-2 py-1.5 text-[11px] font-semibold text-[var(--c-t1)] focus:outline-none focus:ring-1 focus:ring-[var(--c-ring)] cursor-pointer"
+          style={{ backgroundColor: 'var(--c-select)' }}
+        >
+          {CURRENCY_OPTIONS.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        {canRemove && (
+          <button
+            onClick={() => onRemove(expense.id)}
+            className="ml-auto text-[var(--c-t4)] hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-[var(--c-card-h)] shrink-0"
+            aria-label="Remove expense"
+          >
+            <X size={14} strokeWidth={2.5} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      <div className="pl-1">
+        <label htmlFor={amtId} className="sr-only">Amount</label>
+        <NumberInput
+          id={amtId}
+          placeholder="Amount"
+          value={expense.amount}
+          onChange={val => onUpdate(expense.id, 'amount', val)}
+          className="w-full bg-[var(--c-input)] border border-[var(--c-border)] rounded-lg px-3 py-2 text-sm font-semibold text-[var(--c-t1)] placeholder:text-[var(--c-ph)] focus:outline-none focus:ring-1 focus:ring-[var(--c-ring)] transition-all"
+        />
+      </div>
     </div>
   );
 }

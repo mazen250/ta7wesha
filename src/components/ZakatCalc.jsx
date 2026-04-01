@@ -1,4 +1,4 @@
-import { Heart } from 'lucide-react';
+import { Heart, Info } from 'lucide-react';
 import { formatNumber } from '../utils/format';
 
 export default function ZakatCalc({ rates }) {
@@ -53,6 +53,22 @@ export default function ZakatCalc({ rates }) {
             </p>
           )
         )}
+
+        {/* Disclaimers */}
+        <div className="pt-2 border-t border-[var(--c-border)] space-y-1.5">
+          <div className="flex items-start gap-1.5">
+            <Info size={11} className="text-[var(--c-t4)] mt-0.5 shrink-0" strokeWidth={2.5} />
+            <p className="text-[10px] text-[var(--c-t4)] leading-relaxed">
+              Zakat is due only if wealth is held for a full lunar year (Hawl). This is an estimate based on your current savings — consult a scholar for your specific situation.
+            </p>
+          </div>
+          <div className="flex items-start gap-1.5">
+            <Info size={11} className="text-[var(--c-t4)] mt-0.5 shrink-0" strokeWidth={2.5} />
+            <p className="text-[10px] text-[var(--c-t4)] leading-relaxed">
+              Personal-use items (jewelry, home, car) may be exempt. Debts may also be deductible.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

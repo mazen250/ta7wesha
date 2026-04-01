@@ -1,29 +1,13 @@
-import { DollarSign, Euro, Gem, TrendingUp, TrendingDown } from 'lucide-react';
+import { DollarSign, Euro, Gem } from 'lucide-react';
 import { formatNumber } from '../utils/format';
-import { ASSET_COLORS } from '../constants';
+import { getCurrencyColor } from '../constants';
 
 const RATE_CARDS = [
-  { key: 'usd', label: '1 USD', icon: DollarSign, getValue: r => formatNumber(r.usdToEgp, 2), accent: ASSET_COLORS.usd },
-  { key: 'eur', label: '1 EUR', icon: Euro, getValue: r => formatNumber(r.eurToEgp, 2), accent: ASSET_COLORS.eur },
-  { key: 'gold', label: 'Gold Pound', icon: Gem, getValue: r => formatNumber(r.goldPoundEgp), accent: ASSET_COLORS.gold },
+  { key: 'usd', label: '1 USD', icon: DollarSign, getValue: r => formatNumber(r.usdToEgp, 2), accent: getCurrencyColor('usd') },
+  { key: 'eur', label: '1 EUR', icon: Euro, getValue: r => formatNumber(r.eurToEgp, 2), accent: getCurrencyColor('eur') },
+  { key: 'gold', label: '1 Gold Pound', icon: Gem, getValue: r => formatNumber(r.goldPoundEgp), accent: getCurrencyColor('gold') },
 ];
 
-function ChangeBadge({ value }) {
-  if (value == null || Math.abs(value) < 0.01) return null;
-  const isPositive = value > 0;
-  const Icon = isPositive ? TrendingUp : TrendingDown;
-  return (
-    <span
-      className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-        isPositive ? 'text-emerald-400 bg-emerald-500/15' : 'text-red-400 bg-red-500/15'
-      }`}
-      aria-label={`${isPositive ? 'Up' : 'Down'} ${Math.abs(value).toFixed(2)} percent`}
-    >
-      <Icon size={10} strokeWidth={3} aria-hidden="true" />
-      {Math.abs(value).toFixed(2)}%
-    </span>
-  );
-}
 
 export default function RateBanner({ rates, isLoading }) {
   if (isLoading && !rates) {
@@ -46,7 +30,7 @@ export default function RateBanner({ rates, isLoading }) {
         >
           <div className="flex items-center gap-1.5 mb-2">
             <card.icon size={14} style={{ color: card.accent }} strokeWidth={2.5} aria-hidden="true" />
-            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-[var(--c-t3)]">
+            <span className="text-[8px] sm:text-[9px] font-semibold uppercase tracking-widest text-[var(--c-t3)]">
               {card.label}
             </span>
           </div>
@@ -56,11 +40,6 @@ export default function RateBanner({ rates, isLoading }) {
             </span>
             <span className="text-[10px] font-bold text-[var(--c-t4)] uppercase">EGP</span>
           </div>
-          {rates.changes && (
-            <div className="mt-1.5">
-              <ChangeBadge value={rates.changes[card.key]} />
-            </div>
-          )}
         </div>
       ))}
     </div>

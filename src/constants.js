@@ -1,5 +1,3 @@
-import { Gem, DollarSign, Euro, Landmark } from 'lucide-react';
-
 // -- Conversion constants --
 export const TROY_OUNCE_GRAMS = 31.1035;
 export const GOLD_21K_PURITY = 21 / 24;
@@ -11,7 +9,8 @@ export const API_GOLD = 'https://api.gold-api.com/price/XAU';
 
 // -- localStorage keys --
 export const STORAGE_KEYS = {
-  amounts: 'ta7wesha-amounts',
+  savings: 'ta7wesha-savings',
+  amounts: 'ta7wesha-amounts', // legacy — used for migration
   rates: 'ta7wesha-rates',
   prevRates: 'ta7wesha-prev-rates',
   goals: 'ta7wesha-goals',
@@ -20,32 +19,58 @@ export const STORAGE_KEYS = {
   theme: 'ta7wesha-theme',
 };
 
-// -- Shared asset/currency colors --
-export const ASSET_COLORS = {
+// -- Currency colors --
+export const CURRENCY_COLORS = {
   gold: '#f59e0b',
   usd: '#10b981',
   eur: '#6366f1',
   egp: '#ec4899',
+  gbp: '#8b5cf6',
+  sar: '#06b6d4',
+  aed: '#14b8a6',
+  kwd: '#f97316',
+  bhd: '#e11d48',
+  qar: '#7c3aed',
+  omr: '#0ea5e9',
+  jod: '#d946ef',
+  try: '#ef4444',
+  chf: '#64748b',
+  cad: '#dc2626',
+  aud: '#2563eb',
+  gbp: '#a855f7',
+  jpy: '#f43f5e',
+  cny: '#ea580c',
+  inr: '#0d9488',
 };
 
-// -- Asset definitions for the savings inputs --
-export const ASSETS = [
-  { key: 'gold', icon: Gem, color: ASSET_COLORS.gold, label: 'Gold (21k)', unit: 'grams' },
-  { key: 'usd', icon: DollarSign, color: ASSET_COLORS.usd, label: 'US Dollar', unit: 'USD' },
-  { key: 'eur', icon: Euro, color: ASSET_COLORS.eur, label: 'Euro', unit: 'EUR' },
-  { key: 'egp', icon: Landmark, color: ASSET_COLORS.egp, label: 'Egyptian Pound', unit: 'EGP' },
-];
+const DEFAULT_COLOR = '#94a3b8';
 
-// -- Currency options for selects (goals, converter) --
+export function getCurrencyColor(key) {
+  return CURRENCY_COLORS[key] || DEFAULT_COLOR;
+}
+
+// -- Currency options (for all selects) --
 export const CURRENCY_OPTIONS = [
-  { value: 'egp', label: 'EGP' },
-  { value: 'usd', label: 'USD' },
-  { value: 'eur', label: 'EUR' },
-  { value: 'gold', label: 'Gold (g)' },
+  { value: 'gold', label: 'Gold (g)', name: 'Gold grams' },
+  { value: 'egp', label: 'EGP', name: 'Egyptian Pound' },
+  { value: 'usd', label: 'USD', name: 'US Dollar' },
+  { value: 'eur', label: 'EUR', name: 'Euro' },
+  { value: 'gbp', label: 'GBP', name: 'British Pound' },
+  { value: 'sar', label: 'SAR', name: 'Saudi Riyal' },
+  { value: 'aed', label: 'AED', name: 'UAE Dirham' },
+  { value: 'kwd', label: 'KWD', name: 'Kuwaiti Dinar' },
+  { value: 'bhd', label: 'BHD', name: 'Bahraini Dinar' },
+  { value: 'qar', label: 'QAR', name: 'Qatari Riyal' },
+  { value: 'omr', label: 'OMR', name: 'Omani Rial' },
+  { value: 'jod', label: 'JOD', name: 'Jordanian Dinar' },
+  { value: 'try', label: 'TRY', name: 'Turkish Lira' },
+  { value: 'chf', label: 'CHF', name: 'Swiss Franc' },
+  { value: 'cad', label: 'CAD', name: 'Canadian Dollar' },
+  { value: 'aud', label: 'AUD', name: 'Australian Dollar' },
+  { value: 'jpy', label: 'JPY', name: 'Japanese Yen' },
+  { value: 'cny', label: 'CNY', name: 'Chinese Yuan' },
+  { value: 'inr', label: 'INR', name: 'Indian Rupee' },
 ];
-
-// -- Default state values --
-export const DEFAULT_AMOUNTS = { gold: '', usd: '', eur: '', egp: '' };
 
 // -- Expense categories --
 export const EXPENSE_CATEGORIES = [
