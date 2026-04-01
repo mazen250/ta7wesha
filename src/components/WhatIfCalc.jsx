@@ -2,6 +2,7 @@ import { useState, useMemo, useId } from 'react';
 import { FlaskConical } from 'lucide-react';
 import { formatNumber } from '../utils/format';
 import { convertToEgp } from '../hooks/useSavings';
+import { useLang } from '../hooks/useLang';
 import NumberInput from './NumberInput';
 
 function Slider({ label, value, onChange, min, max, unit }) {
@@ -34,6 +35,7 @@ export default function WhatIfCalc({ rates, savings }) {
   const [usdChange, setUsdChange] = useState(0);
   const [extraSavings, setExtraSavings] = useState('');
   const extraInputId = useId();
+  const { t } = useLang();
 
   const projection = useMemo(() => {
     if (!rates) return null;
@@ -78,20 +80,20 @@ export default function WhatIfCalc({ rates, savings }) {
   const hasChanges = goldChange !== 0 || usdChange !== 0 || (parseFloat(extraSavings) || 0) > 0;
 
   return (
-    <div className="rounded-2xl bg-[var(--c-card)] border border-[var(--c-border)] p-5" role="region" aria-label="What-if calculator">
+    <div className="rounded-2xl bg-[var(--c-card)] border border-[var(--c-border)] p-5" role="region" aria-label={t('whatIf')}>
       <h2 className="text-base font-bold mb-4 flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-xl bg-amber-500/15 flex items-center justify-center" aria-hidden="true">
           <FlaskConical size={16} className="text-amber-400" strokeWidth={2.5} />
         </div>
-        What If
+        {t('whatIf')}
       </h2>
 
-      <Slider label="Gold price change" value={goldChange} onChange={setGoldChange} min={-50} max={50} unit="%" />
-      <Slider label="USD/EGP rate change" value={usdChange} onChange={setUsdChange} min={-50} max={50} unit="%" />
+      <Slider label={t('goldPriceChange')} value={goldChange} onChange={setGoldChange} min={-50} max={50} unit="%" />
+      <Slider label={t('usdEgpRateChange')} value={usdChange} onChange={setUsdChange} min={-50} max={50} unit="%" />
 
       <div className="mb-4">
         <label htmlFor={extraInputId} className="text-[11px] font-semibold text-[var(--c-t3)] block mb-1.5">
-          Extra monthly savings (EGP)
+          {t('extraMonthlySavings')}
         </label>
         <NumberInput
           id={extraInputId}
@@ -105,20 +107,20 @@ export default function WhatIfCalc({ rates, savings }) {
       {projection && hasChanges && (
         <div className="rounded-xl p-3.5 bg-amber-500/[0.07] border border-amber-500/10" aria-live="polite">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs text-[var(--c-t3)] font-medium">Projected total</span>
-            <span className="text-sm font-extrabold">EGP {formatNumber(projection.total, 2)}</span>
+            <span className="text-xs text-[var(--c-t3)] font-medium">{t('projectedTotal')}</span>
+            <span className="text-sm font-extrabold">{t('egp')} {formatNumber(projection.total, 2)}</span>
           </div>
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs text-[var(--c-t3)] font-medium">Difference</span>
+            <span className="text-xs text-[var(--c-t3)] font-medium">{t('difference')}</span>
             <span className={`text-xs font-bold ${projection.difference >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {projection.difference >= 0 ? '+' : ''}{formatNumber(projection.difference, 2)} EGP
+              {projection.difference >= 0 ? '+' : ''}{formatNumber(projection.difference, 2)} {t('egp')}
             </span>
           </div>
           {projection.eta !== null && (
             <div className="flex items-center justify-between pt-1.5 border-t border-[var(--c-border)]">
-              <span className="text-xs text-[var(--c-t3)] font-medium">Time to first goal</span>
+              <span className="text-xs text-[var(--c-t3)] font-medium">{t('timeToFirstGoal')}</span>
               <span className="text-xs font-extrabold text-amber-400">
-                {projection.eta <= 0 ? 'Reached!' : `~${Math.ceil(projection.eta)}mo`}
+                {projection.eta <= 0 ? t('reached') : `~${Math.ceil(projection.eta)} ${t('approxMo')}`}
               </span>
             </div>
           )}

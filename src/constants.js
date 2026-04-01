@@ -4,8 +4,17 @@ export const GOLD_21K_PURITY = 21 / 24;
 export const GOLD_POUND_GRAMS = 8;
 
 // -- API endpoints --
-export const API_CURRENCY = 'https://open.er-api.com/v6/latest/USD';
+// AwesomeAPI — realtime forex, free, no key
+const CURRENCY_PAIRS = [
+  'USD-EGP','USD-EUR','USD-GBP','USD-SAR','USD-AED','USD-KWD',
+  'USD-BHD','USD-QAR','USD-OMR','USD-JOD','USD-TRY','USD-CHF',
+  'USD-CAD','USD-AUD','USD-JPY','USD-CNY','USD-INR',
+];
+export const API_CURRENCY = `https://economia.awesomeapi.com.br/json/last/${CURRENCY_PAIRS.join(',')}`;
 export const API_GOLD = 'https://api.gold-api.com/price/XAU';
+
+// -- Auto-refresh interval (ms) --
+export const RATES_REFRESH_MS = 5 * 60 * 1000; // 5 minutes
 
 // -- localStorage keys --
 export const STORAGE_KEYS = {
@@ -17,6 +26,7 @@ export const STORAGE_KEYS = {
   incomes: 'ta7wesha-incomes',
   expenses: 'ta7wesha-expenses',
   theme: 'ta7wesha-theme',
+  lang: 'ta7wesha-lang',
 };
 
 // -- Currency colors --

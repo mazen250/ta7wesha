@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   TROY_OUNCE_GRAMS, GOLD_21K_PURITY, GOLD_POUND_GRAMS,
-  API_CURRENCY, API_GOLD,
+  API_CURRENCY, API_GOLD, RATES_REFRESH_MS,
   STORAGE_KEYS, ZAKAT_NISAB_GOLD_GRAMS, ZAKAT_RATE,
   getCurrencyColor,
 } from '../constants';
@@ -106,7 +106,7 @@ export function useSavings() {
     load(STORAGE_KEYS.incomes, [{ id: uid(), currency: 'egp', amount: '' }])
   );
   const [expenses, setExpenses] = useState(() =>
-    load(STORAGE_KEYS.expenses, [{ id: uid(), category: 'other', currency: 'egp', amount: '' }])
+    load(STORAGE_KEYS.expenses, [{ id: uid(), name: '', currency: 'egp', amount: '' }])
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -131,11 +131,20 @@ export function useSavings() {
       const currencyData = await currencyRes.json();
       const goldData = await goldRes.json();
 
+      // AwesomeAPI returns { USDEGP: { bid, ... }, USDEUR: { bid, ... }, ... }
+      // Build allRates as { USD: 1, EGP: rate, EUR: rate, ... } (how many per 1 USD)
+      const allRates = { USD: 1 };
+      for (const [key, val] of Object.entries(currencyData)) {
+        // key is like "USDEGP", val.bid is the rate
+        const target = key.replace('USD', '');
+        allRates[target] = parseFloat(val.bid) || 0;
+      }
+
       const newRates = {
-        usdToEgp: currencyData.rates.EGP,
-        eurToUsd: currencyData.rates.EUR,
+        usdToEgp: allRates.EGP || 0,
+        eurToUsd: allRates.EUR || 0,
         goldOunceUsd: goldData.price,
-        allRates: currencyData.rates,
+        allRates,
         lastUpdated: new Date().toISOString(),
       };
 
@@ -155,7 +164,12 @@ export function useSavings() {
     }
   }, []);
 
-  useEffect(() => { fetchRates(); }, [fetchRates]);
+  // Fetch on mount + auto-refresh every 5 minutes
+  useEffect(() => {
+    fetchRates();
+    const interval = setInterval(fetchRates, RATES_REFRESH_MS);
+    return () => clearInterval(interval);
+  }, [fetchRates]);
 
   // Derived calculations (memoized)
   const derived = useMemo(() => {
@@ -287,7 +301,7 @@ export function useSavings() {
   // -- Expense updaters --
 
   const addExpense = useCallback(() => {
-    setExpenses(prev => [...prev, { id: uid(), category: 'other', currency: 'egp', amount: '' }]);
+    setExpenses(prev => [...prev, { id: uid(), name: '', currency: 'egp', amount: '' }]);
   }, []);
   const removeExpense = useCallback((id) => {
     setExpenses(prev => prev.filter(e => e.id !== id));

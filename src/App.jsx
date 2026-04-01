@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { RefreshCw, Sun, Moon } from 'lucide-react';
+import { FaLinkedin, FaInstagram, FaFacebook } from 'react-icons/fa';
 import { useSavings } from './hooks/useSavings';
 import { useTheme } from './hooks/useTheme';
+import { useLang } from './hooks/useLang';
 import { TIME_AGO_TICK_MS } from './constants';
 import { timeAgo } from './utils/format';
 import RateBanner from './components/RateBanner';
@@ -29,37 +31,43 @@ export default function App() {
   } = useSavings();
 
   const { isDark, toggle: toggleTheme } = useTheme();
+  const { t, isRtl, toggleLang } = useLang();
 
-  // Re-render every minute to keep "Updated X ago" fresh
   const [, setTick] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setTick(t => t + 1), TIME_AGO_TICK_MS);
+    const id = setInterval(() => setTick(k => k + 1), TIME_AGO_TICK_MS);
     return () => clearInterval(id);
   }, []);
 
   return (
-    <div className="min-h-dvh px-4 py-6 sm:py-10">
+    <div className="min-h-dvh px-4 py-6 sm:py-10" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="max-w-3xl mx-auto">
 
         {/* Header */}
         <header className="flex items-end justify-between mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-none">Ta7wesha</h1>
-            <p className="text-[13px] text-[var(--c-t3)] mt-1 font-medium">Your savings, one glance.</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-none">{t('appName')}</h1>
+            <p className="text-[13px] text-[var(--c-t3)] mt-1 font-medium">{t('subtitle')}</p>
           </div>
           <div className="flex items-center gap-2">
             {lastUpdated && (
               <span className="text-[11px] text-[var(--c-t3)] font-medium">
-                Updated {timeAgo(lastUpdated)}
+                {t('updated')} {timeAgo(lastUpdated, t)}
               </span>
             )}
             {/* Desktop: all buttons inline */}
             <div className="hidden sm:contents">
               <DataManager exportData={exportData} importData={importData} />
               <button
+                onClick={toggleLang}
+                className="p-2 rounded-xl bg-[var(--c-card)] border border-[var(--c-border)] text-[var(--c-t3)] hover:text-[var(--c-t1)] transition-all text-[11px] font-bold"
+              >
+                {t('language')}
+              </button>
+              <button
                 onClick={toggleTheme}
                 className="p-2 rounded-xl bg-[var(--c-card)] border border-[var(--c-border)] text-[var(--c-t3)] hover:text-[var(--c-t1)] transition-all"
-                aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                aria-label={isDark ? t('lightMode') : t('darkMode')}
               >
                 {isDark ? <Sun size={14} strokeWidth={2.5} /> : <Moon size={14} strokeWidth={2.5} />}
               </button>
@@ -68,33 +76,31 @@ export default function App() {
               onClick={refreshRates}
               disabled={isLoading}
               className="flex items-center gap-1.5 text-xs font-semibold text-[var(--c-t2)] hover:text-[var(--c-t1)] bg-[var(--c-card)] border border-[var(--c-border)] rounded-xl px-3 py-2 transition-all disabled:opacity-30"
-              aria-label="Refresh exchange rates"
+              aria-label={t('refresh')}
               aria-busy={isLoading}
             >
               <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} strokeWidth={2.5} aria-hidden="true" />
-              <span className="hidden sm:inline">Refresh</span>
+              <span className="hidden sm:inline">{t('refresh')}</span>
             </button>
             {/* Mobile: dropdown menu */}
             <HeaderMenu
               isDark={isDark}
               toggleTheme={toggleTheme}
+              toggleLang={toggleLang}
               exportData={exportData}
               importData={importData}
             />
           </div>
         </header>
 
-        {/* Error */}
         {error && (
           <div className="mb-5 p-3 rounded-xl bg-red-500/10 border border-red-500/15 text-red-400 text-xs font-semibold" role="alert">
             {error}
           </div>
         )}
 
-        {/* Rate cards */}
         <RateBanner rates={rates} isLoading={isLoading} />
 
-        {/* Main grid: Savings | Goals */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
           <SavingsSection
             savings={savings} addSaving={addSaving} removeSaving={removeSaving} updateSaving={updateSaving}
@@ -107,7 +113,6 @@ export default function App() {
           />
         </div>
 
-        {/* Total + Expenses row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
           <TotalDisplay rates={rates} isLoading={isLoading} />
           <ExpenseTracker
@@ -116,7 +121,6 @@ export default function App() {
           />
         </div>
 
-        {/* Bottom grid: tools */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <div className="lg:col-span-2">
             <NetWorthChart breakdown={rates?.breakdown} />
@@ -135,8 +139,21 @@ export default function App() {
           </div>
         </div>
 
-        <footer className="text-center text-[10px] text-[var(--c-t4)] mt-10 pb-4 font-medium tracking-wide">
-          Rates from open.er-api.com & gold-api.com — 100% free, no API keys.
+        <footer className="mt-10 pb-6 text-center space-y-2">
+          <p className="text-[10px] text-[var(--c-t4)] font-medium tracking-wide">{t('footer')}</p>
+          <p className="text-[11px] font-semibold text-[var(--c-t3)]">{t('builtBy')}</p>
+          <div className="flex items-center justify-center gap-1.5">
+            <span className="text-[10px] text-[var(--c-t4)] font-medium">{t('connectWithMe')}</span>
+            <a href="https://www.linkedin.com/in/mazen-alahwani-31b693152/" target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg text-[var(--c-t4)] hover:text-[#0A66C2] hover:bg-[var(--c-card-h)] transition-all" aria-label="LinkedIn">
+              <FaLinkedin size={14} />
+            </a>
+            <a href="https://www.instagram.com/mazenfayez/" target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg text-[var(--c-t4)] hover:text-[#E4405F] hover:bg-[var(--c-card-h)] transition-all" aria-label="Instagram">
+              <FaInstagram size={14} />
+            </a>
+            <a href="https://www.facebook.com/mazen.fayezmano" target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg text-[var(--c-t4)] hover:text-[#1877F2] hover:bg-[var(--c-card-h)] transition-all" aria-label="Facebook">
+              <FaFacebook size={14} />
+            </a>
+          </div>
         </footer>
       </div>
     </div>

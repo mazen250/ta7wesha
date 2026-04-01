@@ -3,6 +3,7 @@ import { ArrowRightLeft } from 'lucide-react';
 import { formatSmart } from '../utils/format';
 import { CURRENCY_OPTIONS } from '../constants';
 import { convertToEgp, convertFromEgp } from '../hooks/useSavings';
+import { useLang } from '../hooks/useLang';
 import NumberInput from './NumberInput';
 
 export default function CurrencyConverter({ rates }) {
@@ -13,6 +14,7 @@ export default function CurrencyConverter({ rates }) {
   const fromId = useId();
   const toId = useId();
   const amountId = useId();
+  const { t } = useLang();
 
   if (!rates) return null;
 
@@ -26,18 +28,18 @@ export default function CurrencyConverter({ rates }) {
   };
 
   return (
-    <div className="rounded-2xl bg-[var(--c-card)] border border-[var(--c-border)] p-5" role="region" aria-label="Currency converter">
+    <div className="rounded-2xl bg-[var(--c-card)] border border-[var(--c-border)] p-5" role="region" aria-label={t('converter')}>
       <h2 className="text-base font-bold mb-4 flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-xl bg-cyan-500/15 flex items-center justify-center" aria-hidden="true">
           <ArrowRightLeft size={16} className="text-cyan-400" strokeWidth={2.5} />
         </div>
-        Converter
+        {t('converter')}
       </h2>
 
       <div className="space-y-3">
         {/* From */}
         <div className="flex gap-2">
-          <label htmlFor={fromId} className="sr-only">From currency</label>
+          <label htmlFor={fromId} className="sr-only">{t('currency')}</label>
           <select
             id={fromId}
             value={fromCurrency}
@@ -47,10 +49,10 @@ export default function CurrencyConverter({ rates }) {
           >
             {CURRENCY_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
-          <label htmlFor={amountId} className="sr-only">Amount to convert</label>
+          <label htmlFor={amountId} className="sr-only">{t('amount')}</label>
           <NumberInput
             id={amountId}
-            placeholder="Amount"
+            placeholder={t('amount')}
             value={amount}
             onChange={setAmount}
             className="flex-1 bg-[var(--c-input)] border border-[var(--c-border)] rounded-lg px-3 py-2.5 text-sm font-semibold text-[var(--c-t1)] placeholder:text-[var(--c-ph)] focus:outline-none focus:ring-1 focus:ring-[var(--c-ring)] transition-all"
@@ -62,7 +64,7 @@ export default function CurrencyConverter({ rates }) {
           <button
             onClick={swap}
             className="p-2 rounded-xl bg-[var(--c-input)] border border-[var(--c-border)] text-[var(--c-t3)] hover:text-cyan-400 hover:bg-[var(--c-card-h)] transition-all"
-            aria-label="Swap currencies"
+            aria-label={t('swapCurrencies')}
           >
             <ArrowRightLeft size={14} strokeWidth={2.5} className="rotate-90" aria-hidden="true" />
           </button>
@@ -70,7 +72,7 @@ export default function CurrencyConverter({ rates }) {
 
         {/* To */}
         <div className="flex gap-2">
-          <label htmlFor={toId} className="sr-only">To currency</label>
+          <label htmlFor={toId} className="sr-only">{t('currency')}</label>
           <select
             id={toId}
             value={toCurrency}

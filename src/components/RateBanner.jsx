@@ -1,18 +1,20 @@
 import { DollarSign, Euro, Gem } from 'lucide-react';
 import { formatNumber } from '../utils/format';
 import { getCurrencyColor } from '../constants';
-
-const RATE_CARDS = [
-  { key: 'usd', label: '1 USD', icon: DollarSign, getValue: r => formatNumber(r.usdToEgp, 2), accent: getCurrencyColor('usd') },
-  { key: 'eur', label: '1 EUR', icon: Euro, getValue: r => formatNumber(r.eurToEgp, 2), accent: getCurrencyColor('eur') },
-  { key: 'gold', label: '1 Gold Pound', icon: Gem, getValue: r => formatNumber(r.goldPoundEgp), accent: getCurrencyColor('gold') },
-];
-
+import { useLang } from '../hooks/useLang';
 
 export default function RateBanner({ rates, isLoading }) {
+  const { t } = useLang();
+
+  const RATE_CARDS = [
+    { key: 'usd', label: t('oneUsd'), icon: DollarSign, getValue: r => formatNumber(r.usdToEgp, 2), accent: getCurrencyColor('usd') },
+    { key: 'eur', label: t('oneEur'), icon: Euro, getValue: r => formatNumber(r.eurToEgp, 2), accent: getCurrencyColor('eur') },
+    { key: 'gold', label: t('oneGoldPound'), icon: Gem, getValue: r => formatNumber(r.goldPoundEgp), accent: getCurrencyColor('gold') },
+  ];
+
   if (isLoading && !rates) {
     return (
-      <div className="grid grid-cols-3 gap-3 mb-6" aria-busy="true" aria-label="Loading exchange rates">
+      <div className="grid grid-cols-3 gap-3 mb-6" aria-busy="true">
         {[1, 2, 3].map(i => (
           <div key={i} className="rounded-2xl h-[88px] bg-[var(--c-card)] animate-pulse border border-[var(--c-border)]" />
         ))}
@@ -22,7 +24,7 @@ export default function RateBanner({ rates, isLoading }) {
   if (!rates) return null;
 
   return (
-    <div className="grid grid-cols-3 gap-3 mb-6" role="region" aria-label="Exchange rates">
+    <div className="grid grid-cols-3 gap-3 mb-6" role="region">
       {RATE_CARDS.map(card => (
         <div
           key={card.key}
@@ -38,7 +40,7 @@ export default function RateBanner({ rates, isLoading }) {
             <span className="text-lg sm:text-xl font-extrabold tracking-tight">
               {card.getValue(rates)}
             </span>
-            <span className="text-[10px] font-bold text-[var(--c-t4)] uppercase">EGP</span>
+            <span className="text-[10px] font-bold text-[var(--c-t4)] uppercase">{t('egp')}</span>
           </div>
         </div>
       ))}
