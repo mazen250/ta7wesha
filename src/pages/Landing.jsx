@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   Coins, Gem, Bell, Target, Calculator, ShieldCheck,
-  ArrowRight, Menu, X, Shield, Languages,
+  ArrowRight, Menu, X, Shield, Languages, Sun, Moon,
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
+import { useNavigate } from '../App';
 
+import logo from '../assets/icon.png';
 import screenshot1 from '../assets/1.png';
 import screenshot2 from '../assets/2.png';
 import screenshot3 from '../assets/3.png';
@@ -81,6 +83,13 @@ function AppStoreBadge() {
 export default function Landing() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }, [dark]);
 
   const scrollTo = useCallback((id) => {
     setMenuOpen(false);
@@ -129,9 +138,9 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="font-extrabold text-lg tracking-tight gradient-text cursor-pointer"
+            className="cursor-pointer"
           >
-            Ta7wesha
+            <img src={logo} alt="Ta7wesha" className="h-28" />
           </button>
 
           {/* Desktop */}
@@ -145,6 +154,25 @@ export default function Landing() {
                 {l.label}
               </button>
             ))}
+            <button
+              onClick={() => navigate('/privacy')}
+              className="text-sm text-[var(--c-text-3)] hover:text-[var(--c-text)] transition-colors cursor-pointer"
+            >
+              Privacy Policy
+            </button>
+            <button
+              onClick={() => navigate('/terms')}
+              className="text-sm text-[var(--c-text-3)] hover:text-[var(--c-text)] transition-colors cursor-pointer"
+            >
+              Terms
+            </button>
+            <button
+              onClick={() => setDark(!dark)}
+              className="p-2 rounded-xl text-[var(--c-text-3)] hover:text-[var(--c-text)] hover:bg-[var(--c-surface-h)] transition-all cursor-pointer"
+              aria-label="Toggle theme"
+            >
+              {dark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             <a
               href="#"
               className="inline-flex items-center gap-2 bg-[var(--c-emerald)] hover:brightness-110 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all"
@@ -175,6 +203,25 @@ export default function Landing() {
                 {l.label}
               </button>
             ))}
+            <button
+              onClick={() => { setMenuOpen(false); navigate('/privacy'); }}
+              className="block text-sm text-[var(--c-text-2)] py-2.5 w-full text-left cursor-pointer"
+            >
+              Privacy Policy
+            </button>
+            <button
+              onClick={() => { setMenuOpen(false); navigate('/terms'); }}
+              className="block text-sm text-[var(--c-text-2)] py-2.5 w-full text-left cursor-pointer"
+            >
+              Terms
+            </button>
+            <button
+              onClick={() => setDark(!dark)}
+              className="flex items-center gap-2 text-sm text-[var(--c-text-2)] py-2.5 w-full text-left cursor-pointer"
+            >
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+              {dark ? 'Light Mode' : 'Dark Mode'}
+            </button>
             <a
               href="#"
               className="inline-flex items-center gap-2 bg-[var(--c-emerald)] text-white text-sm font-semibold px-4 py-2 rounded-xl mt-2"
@@ -450,17 +497,17 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="text-center sm:text-left">
-              <p className="font-bold gradient-text mb-1">Ta7wesha</p>
+              <img src={logo} alt="Ta7wesha" className="h-28" />
               <p className="text-xs text-[var(--c-text-4)]">&copy; 2026 Ta7wesha. All rights reserved.</p>
             </div>
 
             <div className="flex items-center gap-6 text-sm text-[var(--c-text-3)]">
-              <a href="#/privacy" className="hover:text-[var(--c-text)] transition-colors">
+              <button onClick={() => navigate('/privacy')} className="hover:text-[var(--c-text)] transition-colors cursor-pointer">
                 Privacy Policy
-              </a>
-              <a href="#/terms" className="hover:text-[var(--c-text)] transition-colors">
+              </button>
+              <button onClick={() => navigate('/terms')} className="hover:text-[var(--c-text)] transition-colors cursor-pointer">
                 Terms &amp; Conditions
-              </a>
+              </button>
               <a
                 href="mailto:mazenfayez56@gmail.com"
                 className="hover:text-[var(--c-text)] transition-colors"

@@ -1,30 +1,47 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import Landing from './pages/Landing';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 
-function getPage() {
-  return window.location.hash.slice(1) || '/';
+const NavigateContext = createContext(null);
+
+export function useNavigate() {
+  return useContext(NavigateContext);
 }
 
 export default function App() {
-  const [page, setPage] = useState(getPage);
+  const [path, setPath] = useState(window.location.pathname);
 
-  useEffect(() => {
-    const onHash = () => {
-      setPage(getPage());
-      window.scrollTo(0, 0);
-    };
-    window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
+  const navigate = useCallback((to) => {
+    window.history.pushState(null, '', to);
+    setPath(to);
+    window.scrollTo(0, 0);
   }, []);
 
-  switch (page) {
+  useEffect(() => {
+    const onPop = () => {
+      setPath(window.location.pathname);
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  let page;
+  switch (path) {
     case '/privacy':
-      return <Privacy />;
+      page = <Privacy />;
+      break;
     case '/terms':
-      return <Terms />;
+      page = <Terms />;
+      break;
     default:
-      return <Landing />;
+      page = <Landing />;
   }
+
+  return (
+    <NavigateContext.Provider value={navigate}>
+      {page}
+    </NavigateContext.Provider>
+  );
 }

@@ -1,16 +1,19 @@
 import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from '../App';
 
 export default function Privacy() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-dvh px-4 py-12 sm:py-20">
       <div className="max-w-3xl mx-auto">
-        <a
-          href="#/"
-          className="inline-flex items-center gap-2 text-sm text-[var(--c-text-3)] hover:text-[var(--c-text)] transition-colors mb-10"
+        <button
+          onClick={() => navigate('/')}
+          className="inline-flex items-center gap-2 text-sm text-[var(--c-text-3)] hover:text-[var(--c-text)] transition-colors mb-10 cursor-pointer"
         >
           <ArrowLeft size={16} />
           Back to home
-        </a>
+        </button>
 
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
           Privacy Policy

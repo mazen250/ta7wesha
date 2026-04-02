@@ -5,8 +5,25 @@
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
-/* ─── Dark theme (default) ─── */
+/* ─── Light theme (default) ─── */
 :root {
+  --c-bg: #f8fafc;
+  --c-bg2: #f1f5f9;
+  --c-surface: rgba(255, 255, 255, 0.7);
+  --c-surface-h: rgba(255, 255, 255, 0.9);
+  --c-border: rgba(0, 0, 0, 0.07);
+  --c-border-h: rgba(0, 0, 0, 0.12);
+  --c-text: rgba(15, 23, 42, 0.92);
+  --c-text-2: rgba(15, 23, 42, 0.6);
+  --c-text-3: rgba(15, 23, 42, 0.45);
+  --c-text-4: rgba(15, 23, 42, 0.1);
+  --c-emerald: #10b981;
+  --c-indigo: #6366f1;
+  color-scheme: light;
+}
+
+/* ─── Dark theme ─── */
+.dark {
   --c-bg: #030712;
   --c-bg2: #0a0f1e;
   --c-surface: rgba(255, 255, 255, 0.03);
@@ -17,26 +34,7 @@
   --c-text-2: rgba(255, 255, 255, 0.6);
   --c-text-3: rgba(255, 255, 255, 0.4);
   --c-text-4: rgba(255, 255, 255, 0.15);
-  --c-emerald: #10b981;
-  --c-indigo: #6366f1;
   color-scheme: dark;
-}
-
-/* ─── Light theme ─── */
-@media (prefers-color-scheme: light) {
-  :root {
-    --c-bg: #f8fafc;
-    --c-bg2: #f1f5f9;
-    --c-surface: rgba(255, 255, 255, 0.7);
-    --c-surface-h: rgba(255, 255, 255, 0.9);
-    --c-border: rgba(0, 0, 0, 0.07);
-    --c-border-h: rgba(0, 0, 0, 0.12);
-    --c-text: rgba(15, 23, 42, 0.92);
-    --c-text-2: rgba(15, 23, 42, 0.6);
-    --c-text-3: rgba(15, 23, 42, 0.45);
-    --c-text-4: rgba(15, 23, 42, 0.1);
-    color-scheme: light;
-  }
 }
 
 /* ─── Base ─── */
@@ -107,23 +105,21 @@ body {
   width: 240px;
   height: 490px;
   border-radius: 36px;
-  border: 3px solid var(--c-border);
+  border: 3px solid rgba(0,0,0,0.1);
   background: var(--c-bg2);
   padding: 8px;
   position: relative;
   box-shadow:
-    0 25px 60px -12px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 25px 60px -12px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   flex-shrink: 0;
 }
 
-@media (prefers-color-scheme: light) {
-  .phone-frame {
-    border-color: rgba(0,0,0,0.1);
-    box-shadow:
-      0 25px 60px -12px rgba(0, 0, 0, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  }
+.dark .phone-frame {
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 25px 60px -12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .phone-screen {
@@ -160,13 +156,11 @@ body {
 .nav-blur {
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  background: rgba(3, 7, 18, 0.75);
+  background: rgba(248, 250, 252, 0.8);
 }
 
-@media (prefers-color-scheme: light) {
-  .nav-blur {
-    background: rgba(248, 250, 252, 0.8);
-  }
+.dark .nav-blur {
+  background: rgba(3, 7, 18, 0.75);
 }
 
 /* ─── Glow on hover ─── */
