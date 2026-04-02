@@ -1,78 +1,191 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
+/* ─── Dark theme (default) ─── */
 :root {
-  --c-bg: #080d1a;
-  --c-card: rgba(255, 255, 255, 0.04);
-  --c-card-h: rgba(255, 255, 255, 0.07);
-  --c-input: rgba(255, 255, 255, 0.06);
+  --c-bg: #030712;
+  --c-bg2: #0a0f1e;
+  --c-surface: rgba(255, 255, 255, 0.03);
+  --c-surface-h: rgba(255, 255, 255, 0.06);
   --c-border: rgba(255, 255, 255, 0.06);
-  --c-t1: rgba(255, 255, 255, 0.9);
-  --c-t2: rgba(255, 255, 255, 0.4);
-  --c-t3: rgba(255, 255, 255, 0.35);
-  --c-t4: rgba(255, 255, 255, 0.25);
-  --c-ring: rgba(255, 255, 255, 0.2);
-  --c-select: #0c1225;
-  --c-ph: rgba(255, 255, 255, 0.15);
+  --c-border-h: rgba(255, 255, 255, 0.1);
+  --c-text: rgba(255, 255, 255, 0.92);
+  --c-text-2: rgba(255, 255, 255, 0.6);
+  --c-text-3: rgba(255, 255, 255, 0.4);
+  --c-text-4: rgba(255, 255, 255, 0.15);
+  --c-emerald: #10b981;
+  --c-indigo: #6366f1;
+  color-scheme: dark;
 }
 
-:root.light {
-  --c-bg: #f1f5f9;
-  --c-card: rgba(255, 255, 255, 0.75);
-  --c-card-h: rgba(255, 255, 255, 0.9);
-  --c-input: rgba(0, 0, 0, 0.04);
-  --c-border: rgba(0, 0, 0, 0.08);
-  --c-t1: rgba(15, 23, 42, 0.9);
-  --c-t2: rgba(15, 23, 42, 0.5);
-  --c-t3: rgba(15, 23, 42, 0.45);
-  --c-t4: rgba(15, 23, 42, 0.25);
-  --c-ring: rgba(0, 0, 0, 0.12);
-  --c-select: #ffffff;
-  --c-ph: rgba(15, 23, 42, 0.25);
+/* ─── Light theme ─── */
+@media (prefers-color-scheme: light) {
+  :root {
+    --c-bg: #f8fafc;
+    --c-bg2: #f1f5f9;
+    --c-surface: rgba(255, 255, 255, 0.7);
+    --c-surface-h: rgba(255, 255, 255, 0.9);
+    --c-border: rgba(0, 0, 0, 0.07);
+    --c-border-h: rgba(0, 0, 0, 0.12);
+    --c-text: rgba(15, 23, 42, 0.92);
+    --c-text-2: rgba(15, 23, 42, 0.6);
+    --c-text-3: rgba(15, 23, 42, 0.45);
+    --c-text-4: rgba(15, 23, 42, 0.1);
+    color-scheme: light;
+  }
+}
+
+/* ─── Base ─── */
+html {
+  scroll-behavior: smooth;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--c-t4) transparent;
+  scrollbar-color: var(--c-text-4) transparent;
 }
 
 body {
   min-height: 100dvh;
   background: var(--c-bg);
-  color: var(--c-t1);
+  color: var(--c-text);
   -webkit-font-smoothing: antialiased;
-  transition: background 0.3s ease, color 0.3s ease;
 }
 
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input[type="number"] {
-  -moz-appearance: textfield;
+/* ─── Scroll animations ─── */
+[data-animate] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 4px;
-  border-radius: 9999px;
-  background: var(--c-border);
-  outline: none;
+[data-animate].animate-in {
+  opacity: 1;
+  transform: translateY(0);
 }
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #818cf8;
-  cursor: pointer;
-  border: 2px solid var(--c-bg);
-  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.3);
+
+[data-animate-delay="1"] { transition-delay: 0.1s; }
+[data-animate-delay="2"] { transition-delay: 0.2s; }
+[data-animate-delay="3"] { transition-delay: 0.3s; }
+[data-animate-delay="4"] { transition-delay: 0.4s; }
+[data-animate-delay="5"] { transition-delay: 0.5s; }
+
+/* ─── Dot pattern ─── */
+.dot-pattern {
+  background-image: radial-gradient(circle, var(--c-text-4) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ─── Glassmorphism ─── */
+.glass {
+  background: var(--c-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--c-border);
+}
+
+.glass-hover:hover {
+  background: var(--c-surface-h);
+  border-color: var(--c-border-h);
+}
+
+/* ─── Gradient text ─── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--c-emerald), var(--c-indigo));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Phone mockup ─── */
+.phone-frame {
+  width: 240px;
+  height: 490px;
+  border-radius: 36px;
+  border: 3px solid var(--c-border);
+  background: var(--c-bg2);
+  padding: 8px;
+  position: relative;
+  box-shadow:
+    0 25px 60px -12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+}
+
+@media (prefers-color-scheme: light) {
+  .phone-frame {
+    border-color: rgba(0,0,0,0.1);
+    box-shadow:
+      0 25px 60px -12px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 28px;
+  overflow: hidden;
+  position: relative;
+}
+
+.phone-notch {
+  width: 100px;
+  height: 24px;
+  background: var(--c-bg2);
+  border-radius: 0 0 16px 16px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+/* ─── Float animation ─── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.phone-float { animation: float 6s ease-in-out infinite; }
+.phone-float-d1 { animation: float 6s ease-in-out infinite; animation-delay: -2s; }
+.phone-float-d2 { animation: float 6s ease-in-out infinite; animation-delay: -4s; }
+
+/* ─── Nav ─── */
+.nav-blur {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(3, 7, 18, 0.75);
+}
+
+@media (prefers-color-scheme: light) {
+  .nav-blur {
+    background: rgba(248, 250, 252, 0.8);
+  }
+}
+
+/* ─── Glow on hover ─── */
+.glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(99,102,241,0.08));
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.glow:hover::before {
+  opacity: 1;
 }
